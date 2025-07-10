@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  To-Do List
+{% endblock %}
+
+{% block content %}
+  <!-- Header -->
+  <div class="bg-danger bg-gradient">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-2">
+      <div class="col-md-3 mb-2 mb-md-0">
+        <a href="/" class="d-inline-flex link-body-emphasis text-decoration-none"><img src="{% static "my_list/images/logo.png" %}" class="px-3" style="height: 55px;" /></a>
+      </div>
+
+      <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+        {% if is_logged_in %}
+        <li><a href="#" class="nav-link px-2 link-light">{{ user.username|upper }}'s List</a></li>
+        {% else %}
+        <li><a href="#" class="nav-link px-2 link-light">Guest User's List</a></li>
+        {% endif %}
+      </ul>
+
+      <div class="col-md-3 text-end px-3">
+        {% if is_logged_in %}
+        <button type="button" class="btn btn-outline-light"><a href="{% url "logout-user" %}">Logout</a></button>
+        {% else %}
+        <button type="button" class="btn btn-outline-light me-2"><a href="{% url "login-user" %}">Login</a></button>
+        <button type="button" class="btn btn-light"><a href="{% url "register-user" %}">Sign-up</a></button>
+        {% endif %}
+      </div>
+    </header>
+  </div>
+  <!-- New login reminder bar -->
+  {% if not is_logged_in %}
+  <div class="border-top border-black bg-light py-1 px-3">
+    <small class="text-muted">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-info-circle me-1" viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+      </svg>
+      Guest mode: <a href="{% url 'login-user' %}" class="text-decoration-none">Login</a> or <a href="{% url 'register-user' %}" class="text-decoration-none">Sign up</a> to save your list permanently
+    </small>
+  </div>
+  {% endif %}
+  <!-- Main Content -->
+  <div>
+    <div style="overflow-y: auto;">
+      <form action="{% url "home-page" %}" method="post">
+        {% csrf_token %}
+        <input type="text" placeholder="Add New Task" name="new_task" title="Add a new task and it enter" />
+      </form>
+    </div>
+<!-- List of Tasks -->
+<div style="height: 80vh;">
+  <ul class="list-group">
+    {# First show incomplete tasks #}
+    {% for task in tasks %}
+      {% if not task.is_done %}
+      <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+        <!-- Task text -->
+        <div style="flex: 1; min-width: 0; padding-right: 20px;">
+          <h5 class="mb-0" style="word-wrap: break-word; white-space: normal;">{{ task.task }}</h5>
+        </div>
+        
+        <!-- Right-aligned content -->
+        <div class="d-flex align-items-center" style="flex-shrink: 0;">
+          <small class="opacity-50 text-nowrap me-3">{{ task.date }}</small>
+          <div class="d-flex gap-2">
+            <!-- Mark as done button -->
+            <form action="{% url 'mark-done' task.id %}" method="post" style="display: inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-link p-0" title="Mark as done" data-bs-toggle="tooltip">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle hover-grow" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                  <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                </svg>
+              </button>
+            </form>
+            <!-- Delete button -->
+            <a href="{% url 'delete-task' task.id %}" class="text-decoration-none" title="Delete task" data-bs-toggle="tooltip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-circle hover-grow" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </li>
+      {% endif %}
+    {% endfor %}
+
+    {# Then show completed tasks #}
+    {% for task in tasks %}
+      {% if task.is_done %}
+      <li class="list-group-item list-group-item-secondary d-flex justify-content-between align-items-center py-3">
+        <!-- Completed task text -->
+        <div style="flex: 1; min-width: 0; padding-right: 20px;">
+          <h5 class="mb-0 text-muted text-decoration-line-through" style="word-wrap: break-word; white-space: normal;">
+            {{ task.task }}
+          </h5>
+        </div>
+        
+        <!-- Right-aligned content -->
+        <div class="d-flex align-items-center" style="flex-shrink: 0;">
+          <small class="opacity-50 text-nowrap me-3">{{ task.date }}</small>
+          <!-- Delete button only for completed tasks -->
+          <a href="{% url 'delete-task' task.id %}" class="text-decoration-none" title="Delete task" data-bs-toggle="tooltip">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#6c757d" class="bi bi-x-circle hover-grow" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+            </svg>
+          </a>
+        </div>
+      </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</div>
+  <!-- Footer -->
+  <div class="bg-danger bg-gradient">
+    <footer class="d-flex flex-wrap justify-content-between align-items-center py-3">
+      <div class="col-md-4 d-flex align-items-center">
+        <a href="/" class="mb-3 me-2 mb-md-0 text-body-secondary text-decoration-none lh-1">
+          <svg class="bi" width="30" height="24">
+            <use xlink:href="#bootstrap"></use>
+          </svg>
+        </a>
+        <span class="mb-3 mb-md-0 text-body-secondary">©Ghori</span>
+      </div>
+
+      <ul class="nav col-md-4 justify-content-end list-unstyled d-flex px-5">
+        <li class="ms-3">
+          <a class="text-body-secondary" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-twitter-x text-black" viewBox="0 0 16 16">
+              <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z" />
+            </svg>
+          </a>
+        </li>
+        <li class="ms-3">
+          <a class="text-body-secondary" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-github text-black" viewBox="0 0 16 16">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8" />
+            </svg>
+          </a>
+        </li>
+      </ul>
+    </footer>
+  </div>
+{% endblock %}
