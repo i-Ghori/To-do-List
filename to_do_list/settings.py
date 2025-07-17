@@ -80,13 +80,6 @@ WSGI_APPLICATION = 'to_do_list.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -94,7 +87,15 @@ DATABASES = {
         'USER': getenv("DB_USER"),
         'PASSWORD': getenv("DB_PASSWORD"),
         'HOST': getenv("DB_HOST"),
-        'PORT': getenv("DB_PORT")
+        'PORT': getenv("DB_PORT"),
+        'OPTIONS': {
+            'connect_timeout': 10,  
+            'sslmode': 'require',   
+            'keepalives': 1,        
+            'keepalives_idle': 30, 
+            'keepalives_interval': 10,
+            'keepalives_count': 5
+        }
     }
 }
 
