@@ -1,13 +1,25 @@
 {
-    "builds": [{
-        "src": "to_do_list/wsgi.py",
-        "use": "@vercel/python",
-        "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
-    }],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "to_do_list/wsgi.py"
-        }
-    ]
+  "version": 2,
+  "builds": [
+    {
+      "src": "to_do_list/wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "25mb",
+        "runtime": "python3.9",
+        "includeFiles": ["**/*.env"],
+        "suppressStreams": true
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "to_do_list/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "to_do_list/wsgi.py"
+    }
+  ]
 }
